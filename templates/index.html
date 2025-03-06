@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Finger+Paint&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Planificación</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    
+    <h1>Simulación de Algoritmos de Despacho</h1>
+
+    <form id="scheduler-form">
+        <label for="algorithm">Selecciona un Algoritmo:</label>
+        <select id="algorithm">
+            <option value="FIFO">FIFO</option>
+            <option value="SJF">SJF</option>
+            <option value="PRIORIDAD">Prioridad</option>
+        </select>
+        
+        <div id="priority-container" style="display: none;">
+            <label for="priority">Prioridad:</label>
+            <input type="number" id="priority" name="priority" min="1">
+        </div>
+
+        <h3>Procesos</h3>
+        <table id="process-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Llegada</th>
+                    <th>Ráfaga</th>
+                    <th>Prioridad</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se agregarán dinámicamente las filas -->
+            </tbody>
+        </table>
+        <button type="button" onclick="addProcess()">Agregar Proceso</button>
+        
+        <br><br>
+        <button type="submit">Ejecutar</button>
+    </form>
+
+    <br>
+    <img id="ganttChart" style="display: none;" alt="Diagrama de Gantt">
+    
+    <div id="results"></div> <!-- Aquí se mostrarán los tiempos de espera y de sistema -->
+
+    <script>
+        document.getElementById("scheduler-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            ejecutarSimulacion();
+        });
+
+        function ejecutarSimulacion() {
+            let algorithm = document.getElementById("algorithm").value;
+            let rows = document.querySelectorAll("#process-table tbody tr");
+            let processes = [];
+
+            rows.forEach(row => {
+                let id = row.querySelector(".id").value;
+                let arrival = parseInt(row.querySelector(".arrival").value);
+                let burst = parseInt(row.querySelector(".burst").value);
+                let priority = parseInt(row.querySelector(".priority").value);
+
+                if (id && !isNaN(arrival) && !isNaN(burst) && !isNaN(priority)) {
+                    processes.push({ id, arrival, burst, priority });
+                }
+            });
+
+            fetch("/simulate", {
+                method: "POST",
+                body: JSON.stringify({ processes, algorithm }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar el diagrama de Gantt
+                let img = document.getElementById("ganttChart");
+                img.src = data.image_path + "?t=" + new Date().getTime();
+                img.style.display = "block";
+
+                // Mostrar tiempos de espera y de sistema
+                let resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = "<h3>Tiempos de Espera y Sistema</h3>";
+
+                let tableHTML = "<table border='1'><tr><th>Proceso</th><th>Tiempo de Espera</th><th>Tiempo de Sistema</th></tr>";
+                for (let process in data.waiting_times) {
+                    tableHTML += `<tr>
+                        <td>${process}</td>
+                        <td>${data.waiting_times[process]}</td>
+                        <td>${data.turnaround_times[process]}</td>
+                    </tr>`;
+                }
+                tableHTML += "</table>";
+
+                // Mostrar el promedio de los tiempos de espera y de sistema
+                tableHTML += `<p><strong>Tiempo de Espera:</strong> ${data.avg_waiting_time}</p>`;
+                tableHTML += `<p><strong>Tiempo de Sistema:</strong> ${data.avg_turnaround_time}</p>`;
+
+                resultsDiv.innerHTML += tableHTML;
+            });
+        }
+
+        function addProcess() {
+            const table = document.getElementById("process-table").getElementsByTagName('tbody')[0];
+            const row = table.insertRow();
+            row.classList.add("process-row");
+
+            row.innerHTML = `
+                <td><input type="text" class="id" required></td>
+                <td><input type="number" class="arrival" required></td>
+                <td><input type="number" class="burst" required></td>
+                <td><input type="number" class="priority" required></td>
+                <td><button type="button" onclick="deleteProcess(this)">Eliminar</button></td>
+            `;
+        }
+
+        function deleteProcess(button) {
+            button.parentElement.parentElement.remove();
+        }
+    </script>
+
+</body>
+</html>
