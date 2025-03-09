@@ -1,38 +1,97 @@
-/* Fuente moderna y colores llamativos */
-body {
-    background-image: url("/static/kiut.png");
-    background-size: cover;
-    background-position: center;
-    font-family: "montserrat", sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    text-align: center;
+.contenido {
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out
+}
+.contenido.mostrar{
+    display: block;
+    opacity: 1;
+}
+*{
     margin: 0;
-    padding: 20px;
+    padding: 0
 }
 
-/* Contenedor principal */
-h1 {
-    font-family: 'Dancing Script', cursive;
-    font-weight: 700;
-    font-size: 50px;
-    color: white;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.1));
-    padding: 10px 20px;
+
+.loading-area{
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease-in-out;
+}
+.loader div{
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: animate 1.5s ease-in-out infinite;
     display: inline-block;
-    border-radius: 10px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Contorno negro */
+    margin: .5rem;
+}
+.loader div:nth-child(0){
+    animation-delay: 0s;
+}
+.loader div:nth-child(1){
+    animation-delay: 0.2s;
+}
+.loader div:nth-child(2){
+    animation-delay: 0.4s;
+}
+.loader div:nth-child(3){
+    animation-delay: 0.6s;
+}
+.loader div:nth-child(4){
+    animation-delay: 0.8s;
+}
+.loader div:nth-child(5){
+    animation-delay: 1s;
+}
+.loader div:nth-child(6){
+    animation-delay: 1.2s;
 }
 
+@keyframes animate {
+    0%, 100%{
+        transform: scale(0.2);
+        background-color: red;
+    }
+    40%{
+        transform: scale(1);
+        background-color: #f25330;
+    }
+    50%{
+        transform: scale(1);
+        background: #f2b900;
+    }
+}
 
-/* Formulario */
+body {
+    background: linear-gradient(-45deg, #4158D0, #e560dc, #ffb374, #ef5f5f, #d840b6);
+    background-size: 400% 400%;
+    animation: bg 12s ease infinite;
+    font-family: 'prompt', sans-serif;
+    align-items: center;
+    
+}
+@keyframes bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* Formulari0 */
 form {
-    background: rgba(255, 255, 255, 0.603);
+    position: relative;
+    background: rgba(255, 255, 255, 0.87);
     padding: 25px;
     border-radius: 15px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     max-width: 600px;
-    margin: 20px auto;
+    align-items: center;
+    margin: auto;
 }
 
 /* Estilos para etiquetas e inputs */
@@ -45,19 +104,20 @@ select, input {
     font-family: 'prompt', sans-serif;
     width: 100%;
     padding: 8px;
-    margin-top: 5px;
+
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
 /* Botón principal */
 button {
+    display: block;
     font-family: 'prompt', sans-serif;
     background-color: #9900ff;
     color: white;
     border: none;
     padding: 10px 15px;
-    margin-top: 10px;
+    margin: 10px auto;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
@@ -78,6 +138,47 @@ table {
     overflow: hidden;
 }
 
+/* Estilos para el formulario*/
+@property --angle{
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+form::before{
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background-image: conic-gradient(from var(--angle), purple, orange, pink, cyan, purple);
+    translate: (-50%, -50%);
+    z-index: -1;
+    padding: 3px;
+    border-radius: 15px;
+    animation: spin 3s linear infinite;
+}
+form::after{
+    content: '';
+    position: absolute;
+    inset: -9px;
+    background-image: conic-gradient(from var(--angle), purple, orange, pink, cyan, purple);
+    translate: (-50%, -50%);
+    z-index: -2;
+    padding: 6px;
+    border-radius: 18px;
+    filter: blur(1.5rem);
+    opacity: 0.5;
+    animation: spin 3s linear infinite;
+}
+@keyframes spin {
+    from{
+        --angle: 0deg;
+    }
+    to {
+        --angle: 360deg;
+    }
+    
+}
+
 th, td {
     border-bottom: 1px solid #ddd;
     padding: 12px;
@@ -85,7 +186,7 @@ th, td {
 }
 
 th {
-    background: linear-gradient(45deg, #9900ff, #7a00cc);
+    background: linear-gradient(45deg, #a154d4, #7a00cc);
     color: white;
 }
 
@@ -96,16 +197,17 @@ th {
 
 /* Imagen del diagrama de Gantt */
 #ganttChart {
+    background: rgba(255, 255, 255, 0.589);
     max-width: 100%;
-    margin-top: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    margin: auto;
+    border-radius:15px;
+    text-align: center;
 }
 
 /* Resultados */
 #results {
-    background: white;
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.788);
+    padding: 10px;
     margin-top: 20px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
@@ -121,3 +223,5 @@ th {
     font-weight: bold;
     margin-top: 10px;
 }
+
+

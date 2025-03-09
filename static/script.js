@@ -1,6 +1,36 @@
-document.getElementById("scheduler-form").addEventListener("submit", function(event) {
-    event.preventDefault(); // Evita que el formulario recargue la página
-    ejecutarSimulacion();
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM completamente cargado");
+
+    //Pantalla de carga
+    setTimeout(function () {
+        let preloader = document.querySelector(".loading-area");
+        let content = document.querySelector(".contenido");
+
+        if (preloader) preloader.style.opacity = "0";
+
+        setTimeout(function () {
+            if (preloader) preloader.style.display = "none";
+            if (content) content.classList.add("mostrar");
+        }, 500);
+    }, 3000);
+
+    //Verifica si el formulario existe antes de agregar el event listener
+    let form = document.getElementById("scheduler-form");
+    if (form) {
+        console.log("Formulario encontrado");
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            ejecutarSimulacion();
+        });
+    } else {
+        console.error("❌ ERROR: No se encontró #scheduler-form en el DOM");
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("newSimulation").addEventListener("click", function() {
+        location.reload();
+    });
 });
 
 function ejecutarSimulacion() {
@@ -70,3 +100,7 @@ function addProcess() {
 function deleteProcess(button) {
     button.parentElement.parentElement.remove();
 }
+
+
+
+
