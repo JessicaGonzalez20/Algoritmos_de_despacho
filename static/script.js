@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ejecutarSimulacion();
         });
     } else {
-        console.error("❌ ERROR: No se encontró #scheduler-form en el DOM");
+        console.error(" ERROR: No se encontró #scheduler-form en el DOM");
     }
 });
 
@@ -62,7 +62,9 @@ function ejecutarSimulacion() {
     .then(data => {
         let img = document.getElementById("ganttChart");
         let timestamp = new Date().getTime(); 
+        img.src = '';
         img.src = data.image_path + "?t=" + timestamp;
+        
         img.style.display = "block";
 
         let resultsDiv = document.getElementById("results");

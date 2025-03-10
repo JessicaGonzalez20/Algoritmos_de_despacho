@@ -3,6 +3,7 @@ matplotlib.use('Agg')  # Evita errores de GUI
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import sys
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
@@ -27,26 +28,37 @@ def simulate_fifo(processes):
     return bars, waiting_times, turnaround_times, avg_waiting_time, avg_turnaround_time
 
 def simulate_sjf(processes):
-    processes.sort(key=lambda p: p["arrival"])
+    processes.sort(key=lambda p: p["arrival"])  # Ordenar por tiempo de llegada
     n = len(processes)
     current_time = 0
     bars = []
     waiting_times = {}
     turnaround_times = {}
-    processes_copy = processes.copy()
+    remaining_processes = processes.copy()
 
-    while processes_copy:
-        available = [p for p in processes_copy if p["arrival"] <= current_time]
+    while remaining_processes:
+        # Filtrar procesos disponibles
+        available = [p for p in remaining_processes if p["arrival"] <= current_time]
+
+        # Si no hay procesos listos, avanzar el tiempo al siguiente proceso más cercano
         if not available:
-            current_time = min(p["arrival"] for p in processes_copy)
-            available = [p for p in processes_copy if p["arrival"] <= current_time]
+            current_time = min(p["arrival"] for p in remaining_processes)
+            available = [p for p in remaining_processes if p["arrival"] <= current_time]
+
+        # Elegir el proceso con menor ráfaga de CPU
         p = min(available, key=lambda p: p["burst"])
-        processes_copy.remove(p)
+        remaining_processes.remove(p)
+
+        # Determinar inicio y fin del proceso en el diagrama de Gantt
         start = max(current_time, p["arrival"])
         end = start + p["burst"]
         bars.append((p["id"], start, end - start))
+
+        # Calcular tiempos de espera y retorno
         waiting_times[p["id"]] = start - p["arrival"]
         turnaround_times[p["id"]] = end - p["arrival"]
+
+        # Actualizar tiempo actual
         current_time = end
 
     avg_waiting_time = sum(waiting_times.values()) / n
@@ -100,6 +112,12 @@ def simulate():
         else:
             return jsonify({"error": f"Algoritmo no reconocido: {algorithm}"}), 400
 
+        if not bars:
+            print("No se encontraron procesos")
+        else:
+            print("bars contiene datos")
+        sys.stdout.flush()
+
         fig, ax = plt.subplots(figsize=(10, 3))
         labels = []
         for i, (pid, start, duration) in enumerate(bars):
@@ -113,7 +131,14 @@ def simulate():
 
         os.makedirs("static", exist_ok=True)
         image_path = "static/gantt_chart.png"
+        if os.path.exists(image_path):
+            os.remove(image_path)
+            print("Se ha eliminado el archivo anterior")
+            sys.stdout.flush()
+
         plt.savefig(image_path)
+        print("Gantt chart guardado en")
+        sys.stdout.flush()
         plt.close(fig)
 
         return jsonify({
@@ -125,7 +150,10 @@ def simulate():
         })
     
     except Exception as e:
+        print("Error:", e)
+        sys.stdout.flush()
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
