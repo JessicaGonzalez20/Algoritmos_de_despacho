@@ -29,3 +29,5 @@ Estructura del Proyecto
 app.py            # Código principal de la aplicación  
 requirements.txt  # Dependencias necesarias  
 README.md         # Documentación  
+
+desplegado en render: https://simuladorcpu.onrender.com
